@@ -4,6 +4,8 @@ import os
 import sys
 import time
 
+sys.path.append(os.path.abspath("../"))
+
 import numpy as np
 import tensorflow as tf
 
@@ -89,8 +91,16 @@ def train_model(model, sessions, config):
 
     # Create summary for cost func.
     with tf.variable_scope('training'):
-        loss_op = tf.scalar_summary('Loss (MSE)', model.loss)
-        grad_norm_op = tf.scalar_summary('Gradient norm', model.grad_norm)
+        # Old
+        #loss_op = tf.scalar_summary('Loss (MSE)', model.loss)
+        # new
+        loss_op = tf.summary.scalar('Loss (MSE)', model.loss)
+
+        #grad_norm_op = tf.scalar_summary('Gradient norm', model.grad_norm)
+
+        # new
+        grad_norm_op = tf.summary.scalar('Gradient norm', model.grad_norm)
+
         summary_op = tf.summary.merge_all()
 
     with tf.variable_scope('embeddings'):
@@ -106,7 +116,12 @@ def train_model(model, sessions, config):
 
     saver = tf.train.Saver(tf.trainable_variables(), max_to_keep=10)
     with tf.Session() as session:
-        summary_writer = tf.train.SummaryWriter(log_path, session.graph)
+        # old ocde
+        #summary_writer = tf.train.SummaryWriter(log_path, session.graph)
+        
+        # new code
+        summary_writer = tf.compat.v1.summary.FileWriter(log_path, session.graph)
+
         session.run(tf.initialize_all_variables())
 
         # Set up embedding storage
@@ -220,6 +235,7 @@ def main():
     # Initialize config and model
     i_out = [sessions.parameters.index('Heart Rate')]
     i_in = [i for i in range(len(sessions.parameters)) if i not in i_out]
+    print('model cfg: ', i_in, i_out)
     config = DefaultConfig(inputs=i_in, outputs=i_out)
     model = ContinuousSequenceModel(config)
 

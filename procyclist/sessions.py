@@ -232,6 +232,8 @@ class Sessions:
                 m, n = mat.shape
                 id_ = int(re.findall('\d+', path)[-1])
                 try:
+                    print('==>', parameters_idx[:n])
+                    print('-->', mat[:])
                     data.append(mat[:, parameters_idx[:n]].astype(cls.DTYPE))
                 except IndexError:
                     print('Data matrix lacking parameters in: %s' % path)
@@ -262,7 +264,10 @@ class Sessions:
         # Join metadata for cyclist and set index
         meta = pd.DataFrame(meta)
         meta['order'] = meta.index
+        print('==>', meta)
+        print('==>', metaframe)
         meta = pd.merge(meta, metaframe, on=['cyclist', 'id'])
+        # pd.concat(meta['cyclist', 'id']] , metaframe['cyclist', 'id']] , axis = )
         meta.sort_values('order', inplace=True)
         meta.set_index('order', drop=True, inplace=True)
 

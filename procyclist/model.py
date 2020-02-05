@@ -27,6 +27,13 @@ class ContinuousSequenceModel:
         self._config = config
         self._build_graph(inputs, targets, sequence_length, config)
 
+    def deb_loop(self, n_hidden):
+        dropout = tf.placeholder_with_default(1.0, shape=[], name='dropout')
+        cell = tf.contrib.rnn.LayerNormBasicLSTMCell(
+            n_hidden, forget_bias=1.0, dropout_keep_prob=dropout)
+        cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=dropout)
+        return cell
+
     def _build_graph(self, inputs, targets, sequence_length, config):
         output_dim = config.output_dim
         n_hidden = config.n_hidden
@@ -35,13 +42,15 @@ class ContinuousSequenceModel:
 
         with tf.variable_scope('LSTM'):
             dropout = tf.placeholder_with_default(1.0, shape=[], name='dropout')
-            cell = tf.contrib.rnn.LayerNormBasicLSTMCell(
-                n_hidden, forget_bias=1.0, dropout_keep_prob=dropout)
-            cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=dropout)
+            # cell = tf.contrib.rnn.LayerNormBasicLSTMCell(
+            #     n_hidden, forget_bias=1.0, dropout_keep_prob=dropout)
+            # cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=dropout)
+            
             cell = tf.nn.rnn_cell.MultiRNNCell(
-                [cell] * config.n_layers, state_is_tuple=True)
-
+                [self.deb_loop(n_hidden) for _ in range(config.n_layers)], state_is_tuple=True)
+        
         initial_state = cell.zero_state(batch_size, tf.float32)
+        print('ERR LOG:', cell, inputs, initial_state, sequence_length)
         outputs, state = tf.nn.dynamic_rnn(
             cell, inputs, initial_state=initial_state,
             sequence_length=sequence_length, swap_memory=True)

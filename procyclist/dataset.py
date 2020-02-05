@@ -3,6 +3,9 @@ import glob
 import inspect
 import hashlib
 import os
+import sys
+
+sys.path.append(os.path.abspath("../"))
 
 import numpy as np
 
@@ -35,16 +38,14 @@ def load():
     # Create dataset from files on disk with desired parameters
     parameters = [
         'Time',
-        'Speed',
         'Distance',
         'Power',
+        'Heart Rate',
         'Cadence',
-        'power/kg',
-        'Altitude',
-        'Heart Rate'
+        'Altitude'
     ]
     sessions = Sessions.create(
-        name='men',
+        name='example',
         device='srm',
         parameters=parameters
     )
@@ -67,9 +68,9 @@ def load():
 
     # Remove sessions with negative power, speed or distance
     positive_parameters = [
+        'Time',
         'Distance',
-        'Power',
-        'Speed',
+        'Power'
     ]
     i_positive = list(map(sessions.parameters.index, positive_parameters))
     sessions = sessions[sessions.map(lambda x: np.all(x[:, i_positive] >= 0))]
