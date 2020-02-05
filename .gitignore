@@ -26,6 +26,9 @@ wheels/
 MANIFEST
 procyclist/data/
 procyclist/log
+procyclist/embeddings.npy
+procyclist/predictions.npy
+procyclist/validation_ix.npy
 
 
 # PyInstaller

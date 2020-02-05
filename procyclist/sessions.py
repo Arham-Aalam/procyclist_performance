@@ -198,7 +198,16 @@ class Sessions:
         parameters_idx = list(map(all_parameters.index, parameters))
 
         # Extract data and create object
-        meta, data = cls._extract(
+        # meta, data = cls._extract(
+        #     dataset_path,
+        #     cyclists,
+        #     device_filename,
+        #     device_matrix,
+        #     parameters_idx,
+        #     meta_matrix,
+        #     meta_parameters
+        # )
+        meta, data = cls._extract_csv(
             dataset_path,
             cyclists,
             device_filename,
@@ -267,6 +276,74 @@ class Sessions:
         print('==>', meta)
         print('==>', metaframe)
         meta = pd.merge(meta, metaframe, on=['cyclist', 'id'])
+        # pd.concat(meta['cyclist', 'id']] , metaframe['cyclist', 'id']] , axis = )
+        meta.sort_values('order', inplace=True)
+        meta.set_index('order', drop=True, inplace=True)
+
+        # Select data with corresponding meta data
+        data = np.array(data)
+        return meta, data[meta.index]
+
+    @classmethod
+    def _extract_csv(cls, dataset_path, cyclists, device_filename, device_matrix,
+                 parameters_idx, meta_matrix, meta_parameters):
+        """
+        Extracts all selected parameters from the extracted cyclists
+
+        Assumes that if parameters are missing they will be missing from the end
+        """
+        #print('>>>>>>>>>>>>> CSV', cyclists)
+        meta = list()
+        data = list()
+        for cyclist in cyclists:
+            glob_path = os.path.join(
+                dataset_path, cyclist, 'data', device_filename
+            )
+            #print('>>>>>>>>>>>>>>', glob_path)
+            for path in glob.glob(glob_path):
+                try:
+                    #mat = sio.loadmat(path)[device_matrix]
+                    data_mat = pd.read_csv(path)
+                except Exception:
+                    print('Data matrix could not be read in: %s' % path)
+                    continue
+                m, n = data_mat.values.shape[:2]
+                id_ = int(re.findall('\d+', path)[-1])
+                try:
+                    #data.append(mat[:, parameters_idx[:n]].astype(cls.DTYPE))
+                    data.append(data_mat.values.astype(cls.DTYPE))
+                except IndexError:
+                    print('Data matrix lacking parameters in: %s' % path)
+                    continue
+                meta.append(dict(cyclist=cyclist, path=path, length=m, id=id_))
+        
+        # metaframe = None
+        # for cyclist in cyclists:
+        #     # Load metadata for cyclist
+        #     meta_path = os.path.join(dataset_path, cyclist, cyclist + '.mat')
+        #     try:
+        #         meta_mat = sio.loadmat(meta_path)[cyclist][meta_matrix][0][0]
+        #     except Exception:
+        #         continue
+        #     meta_mat = meta_mat[:, :len(meta_parameters)]
+        #     # Create metadata for cyclist adding cyclist and id columns
+        #     cyclist_meta = pd.DataFrame(
+        #         meta_mat,
+        #         columns=meta_parameters[:meta_mat.shape[1]]
+        #     )
+        #     cyclist_meta['cyclist'] = cyclist
+        #     cyclist_meta['id'] = cyclist_meta.index
+        #     if metaframe is None:
+        #         metaframe = cyclist_meta
+        #     else:
+        #         metaframe = metaframe.append(cyclist_meta)
+
+        # Join metadata for cyclist and set index
+        meta = pd.DataFrame(meta)
+        meta['order'] = meta.index
+        #print('==>', meta)
+        #print('==>', metaframe)
+        #meta = pd.merge(meta, metaframe, on=['cyclist', 'id'])
         # pd.concat(meta['cyclist', 'id']] , metaframe['cyclist', 'id']] , axis = )
         meta.sort_values('order', inplace=True)
         meta.set_index('order', drop=True, inplace=True)

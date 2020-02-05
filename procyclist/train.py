@@ -208,6 +208,7 @@ def train_model(model, sessions, config):
                         'Validation loss (MSE)': loss
                     })
                     summary_writer.add_summary(validation_summary, epoch)
+                    print('--> Epoch: ', epoch, 'Loss: ', loss)
 
         except (KeyboardInterrupt, SystemExit):
             print('Training stopped. Please wait while checkpointing and' +
@@ -231,7 +232,6 @@ def train_model(model, sessions, config):
 def main():
     # Load data
     sessions = procyclist.dataset.load()
-
     # Initialize config and model
     i_out = [sessions.parameters.index('Heart Rate')]
     i_in = [i for i in range(len(sessions.parameters)) if i not in i_out]

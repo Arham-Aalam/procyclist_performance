@@ -57,8 +57,8 @@ def tbatch_generator(sessions, config, batch_size, max_length=None):
     length = SequenceBuffer(batch_size, get(sessions.meta.length), np.int32)
     start = SequenceBuffer(batch_size, repeat(0, n_sessions), np.int32)
     index = SequenceBuffer(batch_size, iter(indices), np.int32)
-    tss = SequenceBuffer(batch_size, get(sessions.meta['TSS']), np.int32)
-
+    #tss = SequenceBuffer(batch_size, get(sessions.meta['TSS']), np.int32)
+    #print('Meta ====>', sessions.meta)
     # Define container for data
     data_dim = config.input_dim + config.output_dim
     container_shape = (len(data), max_length, data_dim)
@@ -76,7 +76,7 @@ def tbatch_generator(sessions, config, batch_size, max_length=None):
             index.evict(drop_mask)
             length.evict(drop_mask)
             start.evict(drop_mask)
-            tss.evict(drop_mask)
+            #tss.evict(drop_mask)
             sync_index = data.evict(drop_mask)
 
             # Drop rows if slots in buffers not completely filled anymore
